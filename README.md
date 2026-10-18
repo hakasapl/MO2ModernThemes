@@ -83,7 +83,7 @@ Qt reads such an icon at the SVG's own `width` and `height` and scales it down, 
 
 ## Building
 
-The stylesheets are built from the templates in `src/`, a base palette from `themes/` and an accent from `accents/`. Qt stylesheets have no CSS variables, so the build writes each variant out complete. It needs Python 3 only:
+The stylesheets are built from the templates in `src/`, a base palette from `themes/` and an accent from `accents/`. Qt stylesheets have no CSS variables, so the build writes each variant out complete. It needs Python 3.10 or newer, and nothing else:
 
 ```
 python build.py

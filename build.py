@@ -41,8 +41,14 @@ COMMENT = re.compile(r"/\*.*?\*/", re.DOTALL)
 HEX_COLOR = re.compile(r"(?<![\w-])#[0-9a-fA-F]{3,8}\b")
 
 
+def readText(path: Path) -> str:
+    # Line endings as they are in the file. Path.read_text() takes newline= only from Python 3.13.
+    with open(path, encoding="utf-8", newline="") as file:
+        return file.read()
+
+
 def readPalette(path: Path, required: tuple) -> dict:
-    palette = dict(DECLARATION.findall(COMMENT.sub("", path.read_text(encoding="utf-8", newline=""))))
+    palette = dict(DECLARATION.findall(COMMENT.sub("", readText(path))))
     palette = {name: value.strip() for name, value in palette.items()}
     for name in required:
         if name not in palette:
@@ -80,7 +86,7 @@ def resolve(text: str, palette: dict, source: str, used: set) -> str:
 
 def checkTemplates(templates: list):
     for path in templates:
-        for number, line in enumerate(path.read_text(encoding="utf-8", newline="").splitlines(), 1):
+        for number, line in enumerate(readText(path).splitlines(), 1):
             # A selector line, such as "#EditExecutablesDialog #add,", names objects; colors are in values.
             isSelector = line.rstrip().endswith((",", "{")) or not (":" in line or "=" in line)
             if not isSelector and HEX_COLOR.search(line):
@@ -113,13 +119,13 @@ def build() -> list:
         for icon in icons:
             target = iconDir / icon.relative_to(ICONS)
             target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_text(resolve(icon.read_text(encoding="utf-8", newline=""), theme, icon.name, iconUsed),
+            target.write_text(resolve(readText(icon), theme, icon.name, iconUsed),
                               encoding="utf-8", newline="")
         built.append(iconDir)
         for source, palette in accents:
             used = set(iconUsed)
             styleSheet = STYLESHEETS / f"Modern Theme {palette['name']}.qss"
-            styleSheet.write_text(resolve(TEMPLATE.read_text(encoding="utf-8", newline=""), palette, TEMPLATE.name, used),
+            styleSheet.write_text(resolve(readText(TEMPLATE), palette, TEMPLATE.name, used),
                                   encoding="utf-8", newline="")
             unused = set(palette) - used
             if unused:
