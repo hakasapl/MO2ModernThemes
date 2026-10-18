@@ -983,8 +983,9 @@ class SmoothScroller:
 
         A stylesheet background turns the viewport's own fill off and draws itself instead, then Qt cannot
         tell the viewport is opaque and paints all of it again for every pixel it scrolls. The fill is the
-        stylesheet's background color, so nothing looks different. A restyle turns it off again. A
-        see-through background stays as it is: a fill would hide what shows through it.
+        stylesheet's background color, so nothing looks different. Every restyle of the list turns it off
+        again, MO2's filter border's too, so the event filter calls this after each. A see-through
+        background stays as it is: a fill would hide what shows through it.
         """
         viewport = self.view.viewport()
         if viewport.palette().brush(viewport.backgroundRole()).isOpaque():
@@ -1519,6 +1520,11 @@ class ThemeEventFilter(QObject):
             if plugin.markers.listCornerRadius and isinstance(watched, CORNERED_LISTS):
                 plugin.applyListCorners(watched)
         if eventType == QEvent.Type.StyleChange:
+            # A list restyled, such as by MO2's filter border, loses the opaque content area its smooth
+            # scrolling needs, and would paint all of itself again for every step; it gets it back.
+            scroller = plugin.smoothScrollers.get(id(watched)) or plugin.smoothScrollers.get(id(watched.parentWidget()))
+            if scroller is not None:
+                QTimer.singleShot(0, scroller.makeOpaque)
             if plugin.markers.filterColor is not None and watched.objectName() in FILTER_WIDGETS:
                 # MO2 set its own stylesheet on it, the recolored one goes on once it has applied.
                 QTimer.singleShot(0, lambda widget=watched: plugin.recolorFilter(widget))
@@ -1613,7 +1619,7 @@ class ModernThemes(mobase.IPlugin):
         )
 
     def version(self) -> mobase.VersionInfo:
-        return mobase.VersionInfo(1, 28, 0)
+        return mobase.VersionInfo(1, 28, 1)
 
     def settings(self) -> list:
         toggles = [*HIDDEN_WIDGETS.values(), SCROLL_BAR_SETTING, SMOOTH_SCROLL_SETTING, STICKY_SEPARATOR_SETTING]
