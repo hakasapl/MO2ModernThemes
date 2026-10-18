@@ -238,10 +238,11 @@ QTextEdit
 
 /* Group Boxes ---------------------------------------------------------------- */
 
+/* Settings panels and the filter panel: the context menus' border. */
 QGroupBox
 {
 	padding: 24px 4px;
-	border: 2px solid var(--accent);
+	border: 1px solid var(--bg-6);
 	border-radius: 10px;
 }
 

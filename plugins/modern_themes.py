@@ -28,7 +28,7 @@ With the marker, whatever the others say:
   settings set; the mod and plugin lists' columns always fit the list's width, dragging the edge between
   two columns trades width between just those two; the mod list's top separator stays pinned while its
   mods fill the list; the executables row sits level with the mod list's; the Nexus settings lose an empty
-  gap. Settings turn the smooth scrolling, the pinned separator and the Nexus gap off.
+  gap and the Diagnostics settings their wider spacing. Settings turn the smooth scrolling, the pinned separator and the Nexus gap off.
 
 From the other markers:
 - Window title bars, the main window's and every dialog's, take the stylesheet's colors (Windows 11).
@@ -143,11 +143,13 @@ DECORATION_COLUMNS = (("modList", 7), ("logList", 1), ("filters", 0), ("download
 THEME_ICON_SIZES = (16, 20, 24, 32, 48)
 # The window Qt shows a dropdown's list in.
 DROPDOWN_CLASS = "QComboBoxPrivateContainer"
-# Widgets whose layout margins differ from the style's while a Modern Theme is selected: object name, then
-# the left, top, right and bottom margins, None to keep that one.
-LAYOUT_MARGINS = {
+# Widgets whose layout differs from MO2's while a stylesheet asks for the plugin, by object name: the
+# layout's left, top, right and bottom margins, None to keep one, and its spacing, -1 for the style's own.
+LAYOUTS = {
     # The executables and Run row, level with the mod list's row beside it.
-    "startGroup": (None, 0, None, None),
+    "startGroup": {"margins": (None, 0, None, None)},
+    # The settings' Diagnostics page sets twice the spacing between its panels that every other page has.
+    "diagnosticsTab": {"spacing": -1},
 }
 # Lists whose highlighted rows fill the whole row; the mod list's separator delegate does it there when
 # the stylesheet asks for separator bars.
@@ -1505,6 +1507,8 @@ class ThemeEventFilter(QObject):
             # A new window gets its colors before it shows, and again if Qt recreates it.
             setTitleBarColors(watched, plugin.markers.titleBar)
         if eventType == QEvent.Type.Show:
+            if watched.objectName() in LAYOUTS:
+                plugin.applyLayout(watched)
             if hiddenWidgetKey(watched) is not None:
                 # Hiding a widget while its show event is delivered confuses the layout, so wait.
                 QTimer.singleShot(0, plugin.applyHiddenWidgets)
@@ -1609,7 +1613,7 @@ class ModernThemes(mobase.IPlugin):
         )
 
     def version(self) -> mobase.VersionInfo:
-        return mobase.VersionInfo(1, 27, 1)
+        return mobase.VersionInfo(1, 28, 0)
 
     def settings(self) -> list:
         toggles = [*HIDDEN_WIDGETS.values(), SCROLL_BAR_SETTING, SMOOTH_SCROLL_SETTING, STICKY_SEPARATOR_SETTING]
@@ -1684,7 +1688,7 @@ class ModernThemes(mobase.IPlugin):
             self._applyFilterBorders,
             self._applySeparators,
             self._applyRowFills,
-            self._applyLayoutMargins,
+            self._applyLayouts,
             self._applyAllListCorners,
             self.applyStickySeparator,
             self._applyIcons,
@@ -1894,22 +1898,31 @@ class ModernThemes(mobase.IPlugin):
             corners.remove()
             del self.listCorners[key]
 
-    def _applyLayoutMargins(self):
-        for name, margins in LAYOUT_MARGINS.items():
-            widget = self.mainWindow.findChild(QWidget, name)
-            layout = widget.layout() if widget is not None else None
-            if layout is None:
-                continue
-            original = widget.property("modernThemesMargins")
-            if self.isActive:
-                if original is None:
-                    current = layout.contentsMargins()
-                    original = [current.left(), current.top(), current.right(), current.bottom()]
-                    widget.setProperty("modernThemesMargins", original)
-                layout.setContentsMargins(*[o if m is None else m for o, m in zip(original, margins)])
-            elif original is not None:
-                layout.setContentsMargins(*original)
-                widget.setProperty("modernThemesMargins", None)
+    def _applyLayouts(self):
+        # Dialogs are windows of their own, so every window is searched.
+        for window in QApplication.topLevelWidgets():
+            for widget in [window, *window.findChildren(QWidget)]:
+                if widget.objectName() in LAYOUTS:
+                    self.applyLayout(widget)
+
+    def applyLayout(self, widget: QWidget):
+        layout = widget.layout()
+        tweak = LAYOUTS.get(widget.objectName())
+        if layout is None or tweak is None:
+            return
+        original = widget.property("modernThemesLayout")
+        if self.isActive:
+            if original is None:
+                margins = layout.contentsMargins()
+                original = [margins.left(), margins.top(), margins.right(), margins.bottom(), layout.spacing()]
+                widget.setProperty("modernThemesLayout", original)
+            wanted = tweak.get("margins", (None,) * 4)
+            layout.setContentsMargins(*[old if new is None else new for old, new in zip(original[:4], wanted)])
+            layout.setSpacing(tweak.get("spacing", original[4]))
+        elif original is not None:
+            layout.setContentsMargins(*original[:4])
+            layout.setSpacing(original[4])
+            widget.setProperty("modernThemesLayout", None)
 
     def _applyRowFills(self):
         for name in ROW_FILL_LISTS:

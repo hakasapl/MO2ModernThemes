@@ -14,8 +14,8 @@
 	--bg-5: #25252a; /* button.secondaryBackground: buttons, selection, hover */
 	--bg-6: #383840; /* toolbar.activeBackground over --bg-4: button hover, selected tab and menu item, borders */
 
-	/* Text boxes, number boxes and dropdowns. Borderless in the dark base: the inputs' own background, where
-	   the light base uses input.border. */
+	/* Text boxes, number boxes and dropdowns. Borderless: the inputs' own background, where Bearded's
+	   input.border would outline them. */
 	--input-border: #1a1a1e;
 
 	--scrollbar: #2a2a2d; /* scrollbarSlider.background over --bg-1 */

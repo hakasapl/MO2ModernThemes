@@ -2,7 +2,7 @@
 
 Modern themes with extended styling through a plugin for [Mod Organizer 2](https://github.com/ModOrganizer2/modorganizer).
 
-The themes are Qt stylesheets in a dark and a light base, each with nine accent colors. The plugin does what a stylesheet cannot: smooth scrolling, overlay scroll bars, list columns that always fit, rounded and pinned separators, themed window title bars, sharp SVG icons in place of MO2's small PNGs, and fixes for the places where MO2 or Qt paint over a stylesheet. Any stylesheet can use the plugin, see [Using the plugin in your own stylesheet](#using-the-plugin-in-your-own-stylesheet).
+The themes are Qt stylesheets in a dark base with nine accent colors. The plugin does what a stylesheet cannot: smooth scrolling, overlay scroll bars, list columns that always fit, rounded and pinned separators, themed window title bars, sharp SVG icons in place of MO2's small PNGs, and fixes for the places where MO2 or Qt paint over a stylesheet. Any stylesheet can use the plugin, see [Using the plugin in your own stylesheet](#using-the-plugin-in-your-own-stylesheet).
 
 ## Installing
 
@@ -11,7 +11,7 @@ Download both archives from the [latest release](../../releases/latest) and extr
 - **MO2ModernThemes-Plugin** puts `modern_themes.py` in `plugins/`.
 - **MO2ModernThemes-Themes** puts the stylesheets and their icons in `stylesheets/`.
 
-Restart MO2, then pick a theme in **Settings → General → Style**: `Modern Theme Dark - <accent>` or `Modern Theme Light - <accent>`, with Blue, Gray, Green, Indigo, Orange, Red, Violet or Yellow. The themes work without the plugin too, with ordinary scroll bars and MO2's own icons in the lists.
+Restart MO2, then pick a theme in **Settings → General → Style**: `Modern Theme Dark - <accent>`, with Blue, Gray, Green, Indigo, Orange, Red, Violet or Yellow. The themes work without the plugin too, with ordinary scroll bars and MO2's own icons in the lists.
 
 ### Plugin settings
 
@@ -27,12 +27,9 @@ Restart MO2, then pick a theme in **Settings → General → Style**: `Modern Th
 
 ## The themes
 
-| Base | Colors from |
-|---|---|
-| Dark | [Bearded Theme](https://github.com/BeardedBear/bearded-theme) Vivid Black |
-| Light | VS Code's Light Modern |
+The colors come from [Bearded Theme](https://github.com/BeardedBear/bearded-theme) Vivid Black.
 
-The accent colors checkboxes, radio buttons, settings panels and active filter borders. Everything else uses the base's colors.
+The accent colors checkboxes, radio buttons and active filter borders. Everything else uses the base's colors.
 
 The stylesheet started from [Night Eyes](https://github.com/ciathyza/mo2-themes) by Ciathyza. MO2's icons are redrawn flat, tracing the shapes of MO2's originals.
 
