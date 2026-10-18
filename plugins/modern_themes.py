@@ -182,6 +182,8 @@ SCROLL_SPEED_SETTING = ("scroll_speed", "Rows the lists scroll for each mouse wh
 # In milliseconds, the time a glide takes to close all but 1/e of the distance left, so a wheel step
 # settles in about 4.6 times that.
 SMOOTH_SCROLL_TIME_CONSTANT = 45
+# In milliseconds, how long a glide waits for the list to paint its last step before it makes the next.
+SMOOTH_SCROLL_PAINT_WAIT = 50
 # Once easing moves less than a step a frame, the glide moves one step every few frames, the gap growing
 # from one frame up to this many, so it slows to a stop evenly instead of a step at ever longer gaps.
 SMOOTH_SCROLL_MAX_INTERVAL = 4
@@ -459,6 +461,9 @@ def cellBackground(delegate, option, index):
     """
     sample = QStyleOptionViewItem(option)
     sample.state &= ~QStyle.StateFlag.State_HasFocus
+    # Laid out two pixels wide at the cell's right edge: the delegate still fills the background there,
+    # but has next to no text to lay out.
+    sample.rect = QRect(option.rect.right() - 1, option.rect.top(), 2, option.rect.height())
     image = QImage(1, 1, QImage.Format.Format_ARGB32_Premultiplied)
     image.fill(Qt.GlobalColor.transparent)
     painter = QPainter(image)
@@ -962,6 +967,9 @@ class SmoothScroller:
         self.maxMove = 1
         self.isGliding = False
         self._isMoving = False
+        # Whether the list still has to paint the last step, and since when.
+        self._awaitingPaint = False
+        self._stepTimer = QElapsedTimer()
         self.clock = QElapsedTimer()
         self.autoFill = view.viewport().autoFillBackground()
         view.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
@@ -1016,7 +1024,17 @@ class SmoothScroller:
         height = self.view.sizeHintForRow(0)
         return height if height > 0 else self.view.fontMetrics().height() + 4
 
+    def painted(self):
+        """The list painted, so the glide may take its next step."""
+        self._awaitingPaint = False
+
     def _onFrame(self):
+        # One step per paint. A frame can come before the list painted the last one, when the frame before
+        # was late; a second step then made Qt paint the whole list again, a stutter, because the list's
+        # children, the pinned separator and the corner caps, moved back after the first. The time waited
+        # goes into the next step, which the cap on a step's size still holds.
+        if self._awaitingPaint and self._stepTimer.elapsed() < SMOOTH_SCROLL_PAINT_WAIT:
+            return
         # restart() counts whole milliseconds, a quarter of a frame at 240 Hz, which would make the
         # distance each frame moves wobble.
         elapsed = self.clock.nsecsElapsed() / 1e6
@@ -1047,6 +1065,8 @@ class SmoothScroller:
             self._isMoving = True
             self.bar.setValue(value)
             self._isMoving = False
+            self._awaitingPaint = self.view.viewport().isVisible()
+            self._stepTimer.start()
 
     def _stop(self):
         self.isGliding = False
@@ -1072,7 +1092,7 @@ class StickySeparator(QWidget):
 
     It is a child of the viewport, so the list still scrolls by moving the pixels already painted.
     Scrolling moves it with the content and it goes back to the top after every step, which repaints
-    only the row or two under it.
+    only the row or two under it. While no separator is pinned it waits just above the list's top edge.
     """
 
     def __init__(self, view: QAbstractItemView):
@@ -1123,8 +1143,12 @@ class StickySeparator(QWidget):
             return
         separator = self._currentSeparator()
         if separator is None:
-            self.separator = None
-            self.hide()
+            # Parked just above the list rather than hidden: hiding it, or showing it again, made Qt paint
+            # the whole list again, a stutter in a fast scroll. Out of view, it keeps what it showed.
+            if not self.isHidden():
+                parked = QRect(0, -self.height() - 1, self.view.viewport().width(), self.height())
+                if self.geometry() != parked:
+                    self.setGeometry(parked)
             return
         view = self.view
         height = view.visualRect(separator).height()
@@ -1140,6 +1164,7 @@ class StickySeparator(QWidget):
             self.separator = QPersistentModelIndex(separator)
             self.update()
         if self.isHidden():
+            # Shown once; from then on it parks out of view instead of hiding.
             self.show()
             self.raise_()
 
@@ -1502,6 +1527,10 @@ class ThemeEventFilter(QObject):
             view = watched.parentWidget()
             if isinstance(view, CORNERED_LISTS) and watched is view.viewport():
                 plugin.applyListCorners(view)
+        if eventType == QEvent.Type.Paint and plugin.smoothScrollers:
+            scroller = plugin.smoothScrollers.get(id(watched.parentWidget()))
+            if scroller is not None and watched is scroller.view.viewport():
+                scroller.painted()
         if eventType == QEvent.Type.Paint and watched is plugin.mainWindow and not plugin.hasPainted:
             # MO2's first paint resets the lists' resize modes, put the fitted ones back after it.
             plugin.hasPainted = True
@@ -1580,7 +1609,7 @@ class ModernThemes(mobase.IPlugin):
         )
 
     def version(self) -> mobase.VersionInfo:
-        return mobase.VersionInfo(1, 27, 0)
+        return mobase.VersionInfo(1, 27, 1)
 
     def settings(self) -> list:
         toggles = [*HIDDEN_WIDGETS.values(), SCROLL_BAR_SETTING, SMOOTH_SCROLL_SETTING, STICKY_SEPARATOR_SETTING]
