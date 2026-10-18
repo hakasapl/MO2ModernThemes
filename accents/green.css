@@ -1,0 +1,6 @@
+/* Green accent, Bearded Theme Vivid Black's terminal green. */
+:root
+{
+	--accent-name: Green;
+	--accent: #42dd76; /* checkboxes, radio buttons and active filter borders */
+}

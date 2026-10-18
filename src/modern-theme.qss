@@ -1,0 +1,1175 @@
+/* Modern Theme var(--name) for Mod Organizer 2, colors from var(--colors-from) */
+/* Based on the Night Eyes theme v1.2.0 by Ciathyza: https://github.com/ciathyza/mo2-themes */
+
+/* The Modern Themes plugin reads these comments, see the README. */
+/* mo2-modern-themes: this marker turns the plugin on for this stylesheet. */
+/* Window title bars. mo2-modern-themes-titlebar: caption=var(--bg-1) text=var(--text) border=var(--bg-6) */
+/* MO2's icons, relative to this file. mo2-modern-themes-icons: var(--icon-dir)/mo2 */
+/* Active filter borders, as thin as the lists' own. mo2-modern-themes-filter: var(--accent) 1px */
+/* The filter panel's toggle. mo2-modern-themes-filter-toggle: var(--icon-dir)/branch-closed.svg var(--icon-dir)/branch-left.svg */
+/* The lists' corners: their border radius less their border. mo2-modern-themes-list-corner: 5 */
+/* Rounded separator bars. mo2-modern-themes-separators: radius=6 margin=4,2 */
+/* Between buttons or dropdowns and their menus, as the menu bar's items leave. mo2-modern-themes-popup-gap: 2 */
+/* The scroll bars below stand over the content's edge. mo2-modern-themes-overlay-scrollbars */
+
+/* Main Window ---------------------------------------------------------------- */
+
+QWidget
+{
+	background: var(--bg-1);
+	color: var(--text);
+}
+
+QWidget:disabled
+{
+	background: var(--bg-1);
+	color: var(--text-disabled);
+}
+
+QMainWindow::separator
+{
+	border: 0px;
+}
+
+/* Docked panes, such as the log: flat icons, and their buttons colored like the theme's buttons. */
+QDockWidget
+{
+	titlebar-close-icon: url(./var(--icon-dir)/dock-close.svg);
+	titlebar-normal-icon: url(./var(--icon-dir)/dock-float.svg);
+}
+
+/* The title needs a position of its own, or the base style places the buttons, a few pixels tall. Qt makes
+   the title as tall as its text and padding, whatever the buttons' size, so the padding makes room for them. */
+QDockWidget::title
+{
+	text-align: left;
+	padding: 4px 6px;
+}
+
+/* 18px square buttons at the title's right, 4px apart and 4px in from the edge: Qt measures the offsets from
+   4px past the pane's edge. */
+QDockWidget::close-button,
+QDockWidget::float-button
+{
+	subcontrol-origin: margin;
+	subcontrol-position: center right;
+	min-width: 14px;
+	min-height: 14px;
+	padding: 2px;
+	icon-size: 12px;
+	background: var(--bg-5);
+	border: 0px;
+	border-radius: 6px;
+}
+
+QDockWidget::close-button
+{
+	right: 8px;
+}
+
+QDockWidget::float-button
+{
+	right: 30px;
+}
+
+QDockWidget::close-button:hover,
+QDockWidget::float-button:hover
+{
+	background: var(--bg-6);
+}
+
+QDockWidget::close-button:pressed,
+QDockWidget::float-button:pressed
+{
+	background: var(--bg-3);
+}
+
+QAbstractItemView
+{
+	background: var(--bg-2);
+	alternate-background-color: var(--bg-2);
+	show-decoration-selected: 1;
+	selection-background-color: var(--bg-5);
+	selection-color: var(--text);
+}
+
+QAbstractItemView::item:hover
+{
+	color: var(--text-bright);
+}
+
+QAbstractItemView::item:selected
+{
+	background: var(--bg-5);
+	color: var(--text);
+}
+
+/* As thin as a list's own border, so the content stays put when a filter comes on. */
+QAbstractItemView[filtered=true]
+{
+	border: 1px solid var(--accent) !important;
+}
+
+LinkLabel
+{
+	qproperty-linkColor: var(--link);
+}
+
+
+/* Toolbar -------------------------------------------------------------------- */
+
+QToolBar
+{
+	background: var(--bg-1);
+	border: 1px solid var(--bg-1);
+}
+
+QToolBar::separator
+{
+	background: var(--bg-1);
+}
+
+/* Rounded like the menu bar's items, for the hover and press highlights. */
+QToolButton
+{
+	padding: 4px 1px;
+	border-radius: 6px;
+	margin: 4px 1px 0px 1px;
+}
+
+QToolButton:hover
+{
+	background: var(--bg-5);
+}
+
+QToolButton:pressed
+{
+	background: var(--bg-3);
+}
+
+QToolButton::menu-indicator
+{
+	width: 8px;
+}
+
+
+/* Left Pane & File Trees ----------------------------------------------------- */
+
+/* Lists, like the context menus, have a thin border, and their header reaches it: no padding. Qt does not
+   clip the rows to the rounded border, the Modern Themes plugin keeps them out of its corners. */
+QTreeView
+{
+	border-radius: 6px;
+	border: 1px solid var(--bg-6);
+	padding: 0px;
+}
+
+QTreeView::branch:hover
+{
+	background: var(--bg-4);
+	color: var(--text-bright);
+}
+
+QTreeView::branch:selected
+{
+	background: var(--bg-5);
+	color: var(--text);
+}
+
+/* The mod list's separators show no hover or selection, the Modern Themes plugin draws them as bars, so
+   their branch arrows stay plain too instead of showing a square highlight beside the bar. */
+QTreeView#modList::branch:hover,
+QTreeView#modList::branch:selected
+{
+	background: transparent;
+}
+
+QTreeView::item:hover
+{
+	background: var(--bg-4);
+	color: var(--text-bright);
+}
+
+QTreeView::item:selected
+{
+	background: var(--bg-5);
+	color: var(--text);
+}
+
+QTreeView::branch:has-children:!has-siblings:closed,
+QTreeView::branch:closed:has-children:has-siblings
+{
+	image: url(./var(--icon-dir)/branch-closed.svg);
+	border: 0px;
+}
+
+QTreeView::branch:open:has-children:!has-siblings,
+QTreeView::branch:open:has-children:has-siblings
+{
+	image: url(./var(--icon-dir)/branch-open.svg);
+	border: 0px;
+}
+
+QListView
+{
+	border-radius: 6px;
+	border: 1px solid var(--bg-6);
+	padding: 3px;
+}
+
+QListView::item:hover
+{
+	background: var(--bg-4);
+	color: var(--text-bright);
+}
+
+QListView::item:selected
+{
+	background: var(--bg-5);
+	color: var(--text);
+}
+
+QTextEdit
+{
+	background: var(--bg-2);
+	border-radius: 6px;
+}
+
+
+/* Group Boxes ---------------------------------------------------------------- */
+
+QGroupBox
+{
+	padding: 24px 4px;
+	border: 2px solid var(--accent);
+	border-radius: 10px;
+}
+
+/* A transparent title, its background would cover the inside of the rounded corner it sits in. */
+QGroupBox::title
+{
+	subcontrol-origin: padding;
+	subcontrol-position: top left;
+	padding: 8px;
+	background: transparent;
+}
+
+
+/* Search Boxes --------------------------------------------------------------- */
+
+QLineEdit
+{
+	background: var(--bg-3);
+	min-height: 14px;
+	padding: 2px;
+	border: 2px solid var(--input-border);
+	border-radius: 6px;
+	margin-top: 3px;
+}
+
+QLineEdit[valid-filter=false]
+{
+	background-color: var(--error-bg) !important;
+}
+
+
+/* Number Boxes --------------------------------------------------------------- */
+
+/* Like the text boxes, with the separators' arrows for the up and down buttons. */
+QSpinBox,
+QDoubleSpinBox
+{
+	background: var(--bg-3);
+	min-height: 14px;
+	padding: 2px 4px;
+	border: 2px solid var(--input-border);
+	border-radius: 6px;
+}
+
+QSpinBox::up-button,
+QDoubleSpinBox::up-button
+{
+	subcontrol-origin: border;
+	subcontrol-position: top right;
+	width: 16px;
+	background: transparent;
+	border: 0px;
+	border-top-right-radius: 6px;
+}
+
+QSpinBox::down-button,
+QDoubleSpinBox::down-button
+{
+	subcontrol-origin: border;
+	subcontrol-position: bottom right;
+	width: 16px;
+	background: transparent;
+	border: 0px;
+	border-bottom-right-radius: 6px;
+}
+
+QSpinBox::up-button:hover,
+QSpinBox::down-button:hover,
+QDoubleSpinBox::up-button:hover,
+QDoubleSpinBox::down-button:hover
+{
+	background: var(--bg-5);
+}
+
+QSpinBox::up-button:pressed,
+QSpinBox::down-button:pressed,
+QDoubleSpinBox::up-button:pressed,
+QDoubleSpinBox::down-button:pressed
+{
+	background: var(--bg-6);
+}
+
+QSpinBox::up-arrow,
+QDoubleSpinBox::up-arrow
+{
+	image: url(./var(--icon-dir)/spin-up.svg);
+	width: 14px;
+	height: 14px;
+}
+
+QSpinBox::down-arrow,
+QDoubleSpinBox::down-arrow
+{
+	image: url(./var(--icon-dir)/spin-down.svg);
+	width: 14px;
+	height: 14px;
+}
+
+/* Dimmed at the end of the range and when disabled. */
+QSpinBox::up-arrow:disabled,
+QSpinBox::up-arrow:off,
+QDoubleSpinBox::up-arrow:disabled,
+QDoubleSpinBox::up-arrow:off
+{
+	image: url(./var(--icon-dir)/spin-up-disabled.svg);
+}
+
+QSpinBox::down-arrow:disabled,
+QSpinBox::down-arrow:off,
+QDoubleSpinBox::down-arrow:disabled,
+QDoubleSpinBox::down-arrow:off
+{
+	image: url(./var(--icon-dir)/spin-down-disabled.svg);
+}
+
+
+/* Most Dropdowns ------------------------------------------------------------- */
+
+QComboBox
+{
+	background: var(--bg-3);
+	min-height: 20px;
+	padding-left: 5px;
+	border: 2px solid var(--input-border);
+	border-radius: 6px;
+	margin: 3px 0px 1px 0px;
+}
+
+QComboBox:on
+{
+	background: var(--bg-4);
+	color: var(--text);
+	border: 2px solid var(--bg-4);
+}
+
+QComboBox::drop-down
+{
+	width: 20px;
+	subcontrol-origin: padding;
+	subcontrol-position: top right;
+	border: none;
+}
+
+/* A dropdown's list has the context menus' border, and no focus frame around the current item. */
+QComboBox QAbstractItemView
+{
+	border: 1px solid var(--bg-6);
+	border-radius: 8px;
+	padding: 4px;
+	outline: 0px;
+}
+
+/* The window around a dropdown list, made see-through by the Modern Themes plugin. */
+QComboBoxPrivateContainer
+{
+	background: transparent;
+	border: 0px;
+}
+
+/* The separators' arrow, open. */
+QComboBox::down-arrow
+{
+	image: url(./var(--icon-dir)/branch-open.svg);
+	width: 16px;
+	height: 16px;
+}
+
+
+/* Most Buttons --------------------------------------------------------------- */
+
+QPushButton
+{
+	background: var(--bg-5);
+	color: var(--text);
+	min-height: 18px;
+	padding: 2px 12px;
+	border-radius: 6px;
+}
+
+QPushButton:hover
+{
+	background: var(--bg-6);
+	color: var(--text-bright);
+}
+
+QPushButton:pressed
+{
+	background: var(--bg-3);
+	color: var(--text);
+}
+
+QPushButton:checked
+{
+	background: var(--bg-3);
+	color: var(--text);
+	margin: 4px;
+}
+
+/* The filter panel's toggle: narrow, so no padding, and the same size open as closed. The Modern Themes
+   plugin swaps MO2's text arrows on it for the separators' arrow icon. */
+QPushButton#displayCategoriesBtn,
+QPushButton#displayCategoriesBtn:checked
+{
+	padding: 0px;
+	margin: 0px;
+	/* Square, as tall as the filter box beside it. */
+	min-width: 26px;
+	max-width: 26px;
+	min-height: 26px;
+	max-height: 26px;
+}
+
+/* Buttons with a dropdown, such as Shortcut, get the same arrow as the dropdowns. */
+QPushButton::menu-indicator
+{
+	image: url(./var(--icon-dir)/branch-open.svg);
+	width: 16px;
+	height: 16px;
+	subcontrol-origin: padding;
+	subcontrol-position: center right;
+	right: 6px;
+}
+
+
+/* Scroll Bars ---------------------------------------------------------------- */
+
+/* The Modern Themes plugin hides the scroll bars and shows these over the content's edge instead, while
+   the mouse is near it. Without the plugin they are ordinary slim scroll bars. The handle draws in the
+   outer 10px only, but the whole 20px bar grabs it, which makes it easier to catch. */
+
+QScrollBar:vertical
+{
+	background: transparent;
+	width: 20px;
+	border: 0px;
+	margin: 0px;
+}
+
+QScrollBar:horizontal
+{
+	background: transparent;
+	height: 20px;
+	border: 0px;
+	margin: 0px;
+}
+
+QScrollBar::handle:vertical
+{
+	background: var(--scrollbar);
+	min-height: 32px;
+	border-radius: 3px;
+	margin: 2px 2px 2px 12px;
+}
+
+QScrollBar::handle:horizontal
+{
+	background: var(--scrollbar);
+	min-width: 32px;
+	border-radius: 3px;
+	margin: 12px 2px 2px 2px;
+}
+
+QScrollBar::handle:vertical:hover,
+QScrollBar::handle:horizontal:hover,
+QScrollBar::handle:vertical:pressed,
+QScrollBar::handle:horizontal:pressed
+{
+	background: var(--scrollbar-hover);
+}
+
+/* No arrow buttons. */
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical
+{
+	height: 0px;
+	border: 0px;
+}
+
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal
+{
+	width: 0px;
+	border: 0px;
+}
+
+QScrollBar::add-page,
+QScrollBar::sub-page
+{
+	background: transparent;
+}
+
+
+/* Header Rows ---------------------------------------------------------------- */
+
+QHeaderView
+{
+	background: transparent;
+}
+
+/* Column headers. */
+QHeaderView::section
+{
+	background: var(--bg-1);
+	color: var(--text);
+	height: 22px;
+	padding: 0px 5px;
+	border: 0px;
+	border-bottom: 2px solid var(--bg-1);
+	border-right: 2px solid var(--bg-1);
+}
+
+/* Rounded to fit inside the list's border: its radius less its width. */
+QHeaderView::section:first
+{
+	border-top-left-radius: 5px;
+}
+
+QHeaderView::section:last
+{
+	border-right: 0px;
+	border-top-right-radius: 5px;
+}
+
+QHeaderView::section:hover
+{
+	background: var(--bg-5);
+	color: var(--text-bright);
+}
+
+QHeaderView::down-arrow
+{
+	padding-right: 4px;
+	height: 10px;
+	width: 10px;
+}
+
+
+/* Context Menus, Toolbar Dropdowns, & Tooltips ------------------------------- */
+
+QMenuBar
+{
+	background: var(--bg-1);
+	border: 0px;
+	padding: 2px 4px;
+}
+
+/* The margin leaves a small gap between an open item and its menu. */
+QMenuBar::item
+{
+	background: transparent;
+	color: var(--text-muted);
+	padding: 4px 8px;
+	margin: 2px 1px;
+	border-radius: 6px;
+}
+
+QMenuBar::item:selected,
+QMenuBar::item:pressed
+{
+	background: var(--bg-5);
+	color: var(--text-bright);
+}
+
+QMenu
+{
+	background: var(--bg-4);
+	selection-color: var(--text-bright);
+	border: 1px solid var(--bg-6);
+	border-radius: 8px;
+	padding: 4px;
+}
+
+/* Qt paints a menu's padding without the enabled state, so QWidget:disabled would match it. */
+QMenu:disabled
+{
+	background: var(--bg-4);
+}
+
+QMenu::item
+{
+	background: var(--bg-4);
+	selection-background-color: var(--bg-6);
+	padding: 4px 20px;
+	border-radius: 6px;
+}
+
+QMenu::item:selected
+{
+	background: var(--bg-6);
+	color: var(--text-bright);
+}
+
+QMenu::item:disabled
+{
+	background: var(--bg-4);
+	color: var(--text-disabled);
+}
+
+QMenu::separator
+{
+	background: var(--bg-6);
+	height: 1px;
+	margin: 4px 0px;
+}
+
+QMenu::icon
+{
+	margin: 1px;
+}
+
+/* Buttons embedded in menus, such as Change Categories. */
+QMenu QPushButton,
+QMenu QToolButton
+{
+	background: var(--bg-4);
+	color: var(--text);
+	border-radius: 6px;
+}
+
+QMenu QPushButton:hover,
+QMenu QPushButton:pressed,
+QMenu QPushButton:open,
+QMenu QToolButton:hover,
+QMenu QToolButton:pressed
+{
+	background: var(--bg-6);
+	color: var(--text-bright);
+}
+
+QToolTip
+{
+	background: var(--bg-4);
+	color: var(--text);
+	padding: 1px;
+	border: 0px;
+}
+
+QStatusBar::item
+{
+	border: 0px;
+}
+
+QStatusBar
+{
+	padding: 0px 6px;
+	min-height: 34px;
+}
+
+/* The transparent border pads the label, its background shows through it. */
+QStatusBar QLabel
+{
+	border-width: 2px 6px;
+	border-style: solid;
+	border-color: transparent;
+	border-radius: 6px;
+	margin: 4px 0px;
+}
+
+/* The API label is the last one. The status bar adds some space of its own on the right, together
+   they match the gap below the label. */
+QStatusBar QLabel#apistats
+{
+	margin-right: 2px;
+}
+
+
+/* Progress Bars (Downloads) -------------------------------------------------- */
+
+QProgressBar
+{
+	background: var(--bg-3);
+	text-align: center;
+	border: 2px solid var(--bg-3);
+	border-radius: 5px;
+	margin: 0px;
+}
+
+QProgressBar::chunk
+{
+	background: var(--progress);
+	border-top-left-radius: 6px;
+	border-bottom-left-radius: 6px;
+}
+
+
+/* Right Pane and Tab Bars ---------------------------------------------------- */
+
+QTabWidget::pane
+{
+	top: 1px;
+	padding: 2px 2px 10px 2px;
+	border: 0px;
+}
+
+/* The main window's right pane ends level with the left one, its filter box in line with the mod list's. */
+QTabWidget#tabWidget::pane
+{
+	padding-bottom: 0px;
+}
+
+QTabWidget::tab-bar
+{
+	alignment: center;
+}
+
+QTabBar::tab
+{
+	background: var(--bg-3);
+	color: var(--text-muted);
+	padding: 4px 1em;
+	margin: 0px 3px;
+	border: 0px;
+	border-radius: 10px;
+}
+
+QTabBar::tab:disabled
+{
+	background: var(--bg-1);
+	color: var(--text-disabled);
+}
+
+QTabBar::tab:selected
+{
+	background: var(--bg-6);
+	color: var(--text-bright);
+}
+
+QTabBar::tab:!selected:hover
+{
+	background: var(--bg-5);
+	color: var(--text-bright);
+}
+
+QTabBar QToolButton
+{
+	background: var(--bg-5);
+	padding: 1px;
+	border-radius: 6px;
+	margin: 1px;
+}
+
+QTabBar QToolButton:disabled
+{
+	background: transparent;
+}
+
+
+/* Tables (Configure Mod Categories) ------------------------------------------ */
+
+QTableView
+{
+	gridline-color: var(--bg-0);
+	border: 1px solid var(--bg-6);
+	border-radius: 6px;
+}
+
+QListWidget::item#executablesListBox
+{
+	/* fixes the black text problem on the Modify Executables window */
+	color: var(--text);
+}
+
+
+/* Downloads tab -------------------------------------------------------------- */
+
+QWidget#downloadTab QAbstractScrollArea
+{
+	/* background of the entire downloads tab */
+	background: var(--bg-2);
+}
+
+DownloadListView QFrame
+{
+	/* an entry on the Downloads tab */
+	background: var(--bg-3);
+}
+
+DownloadListView QFrame#frame
+{
+	/* outer box of an entry on the Downloads tab */
+	border: 2px solid var(--bg-0);
+}
+
+DownloadListView QLabel#installLabel
+{
+	color: none;
+}
+
+DownloadListView QFrame:clicked
+{
+	background: var(--bg-5);
+}
+
+/* compact downloads view */
+
+DownloadListView[downloadView=standard]::item
+{
+	padding: 16px;
+}
+
+DownloadListView[downloadView=compact]::item
+{
+	padding: 4px;
+}
+
+DownloadListView::item:hover
+{
+	padding: 0px;
+}
+
+DownloadListView::item:selected
+{
+	padding: 0px;
+}
+
+
+/* Checkboxes ----------------------------------------------------------------- */
+
+QTreeView::indicator,
+QListView::indicator,
+QTableView::indicator,
+QCheckBox::indicator
+{
+	width: 12px;
+	height: 12px;
+	background: var(--bg-3);
+	border: 1px solid var(--bg-6);
+	border-radius: 3px;
+}
+
+QTreeView::indicator:hover,
+QListView::indicator:hover,
+QTableView::indicator:hover,
+QCheckBox::indicator:hover
+{
+	border-color: var(--accent);
+}
+
+QTreeView::indicator:checked,
+QListView::indicator:checked,
+QTableView::indicator:checked,
+QCheckBox::indicator:checked
+{
+	background: var(--accent);
+	border-color: var(--accent);
+	image: url(./var(--icon-dir)/check.svg);
+}
+
+QTreeView::indicator:disabled,
+QListView::indicator:disabled,
+QTableView::indicator:disabled,
+QCheckBox::indicator:disabled
+{
+	background: var(--bg-1);
+	border-color: var(--bg-5);
+}
+
+QTreeView::indicator:checked:disabled,
+QListView::indicator:checked:disabled,
+QTableView::indicator:checked:disabled,
+QCheckBox::indicator:checked:disabled
+{
+	background: var(--bg-6);
+	border-color: var(--bg-6);
+	image: url(./var(--icon-dir)/check-disabled.svg);
+}
+
+
+/* Radio Buttons -------------------------------------------------------------- */
+
+QRadioButton::indicator
+{
+	width: 12px;
+	height: 12px;
+	background: var(--bg-3);
+	border: 1px solid var(--bg-6);
+	border-radius: 7px;
+}
+
+QRadioButton::indicator:hover
+{
+	border-color: var(--accent);
+}
+
+QRadioButton::indicator:checked
+{
+	background: var(--accent);
+	border-color: var(--accent);
+	image: url(./var(--icon-dir)/radio.svg);
+}
+
+QRadioButton::indicator:disabled
+{
+	background: var(--bg-1);
+	border-color: var(--bg-5);
+}
+
+QRadioButton::indicator:checked:disabled
+{
+	background: var(--bg-6);
+	border-color: var(--bg-6);
+	image: url(./var(--icon-dir)/radio-disabled.svg);
+}
+
+
+/* Active Mod and Plugin Counters --------------------------------------------- */
+
+QLCDNumber
+{
+	background: var(--bg-3);
+	border: 0px;
+	border-radius: 6px;
+	padding: 0px 4px;
+}
+
+
+/* Main Window Panes ---------------------------------------------------------- */
+
+/* The rows above the mod and plugin lists: everything as tall as the counters, 26px in MO2's layout, and
+   the lists leave some room below the rows. */
+QPushButton#listOptionsBtn,
+QPushButton#openFolderMenu,
+QPushButton#restoreModsButton,
+QPushButton#saveModsButton,
+QPushButton#sortButton,
+QPushButton#restoreButton,
+QPushButton#saveButton
+{
+	min-height: 22px;
+}
+
+/* The Run button: its icon, and a pixel of room below it before the Shortcut button. */
+#startButton
+{
+	qproperty-icon: url(./var(--icon-dir)/run.svg);
+	margin: 0px 0px 1px 0px;
+}
+
+/* The executables dropdown spans the Run and Shortcut buttons beside it: 65px inside its 2px border, from
+   the Run button's top to the Shortcut button's bottom. The Modern Themes plugin takes the top margin off
+   their frame's layout, so their tops are level with the mod list's row. */
+QComboBox#executablesListBox
+{
+	min-height: 65px;
+	margin: 0px;
+}
+
+/* The profile and groups dropdowns, as tall as the counters and the filter box: their 2px border around
+   22px, and no margin, which would make the row taller. */
+QComboBox#profileBox,
+QComboBox#groupCombo
+{
+	min-height: 22px;
+	margin: 0px;
+}
+
+QTreeView#modList,
+QTreeView#espList
+{
+	margin-top: 4px;
+	margin-bottom: 4px;
+}
+
+/* The filter boxes below the lists, level with the filter button and the groups dropdown: no margin. */
+QLineEdit#modFilterEdit,
+QLineEdit#espFilterEdit
+{
+	margin-top: 0px;
+}
+
+
+/* Toolbar and Button Icons --------------------------------------------------- */
+
+/* MO2's icons, flat, from the same folder as the lists' icons. */
+#actionInstallMod
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/installer.svg);
+}
+
+#actionAdd_Profile
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/profiles.svg);
+}
+
+#actionModify_Executables
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/icon_executable.svg);
+}
+
+#actionTool
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/plugins.svg);
+}
+
+#actionSettings,
+QPushButton#listOptionsBtn
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/settings.svg);
+}
+
+#actionNexus,
+#actionModPage,
+#ModInfoDialog #visitNexus
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/internet-web-browser.svg);
+}
+
+#actionUpdate
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/update.svg);
+}
+
+#actionNotifications
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/warning.svg);
+}
+
+#actionHelp
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/help.svg);
+}
+
+#actionEndorseMO,
+#ModInfoDialog #endorse
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/icon_favorite.svg);
+}
+
+#actionChange_Game
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/instance_switch.svg);
+}
+
+#action_Refresh,
+#dataTabRefresh,
+#btnRefreshDownloads
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/view-refresh.svg);
+}
+
+#openFolderMenu
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/open_folder.svg);
+}
+
+#restoreModsButton,
+#restoreButton
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/restore.svg);
+}
+
+#saveModsButton,
+#saveButton
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/backup.svg);
+}
+
+#clearFiltersButton,
+#EditExecutablesDialog #reset,
+#SettingsDialog #nexusDisconnect
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/edit_clear.svg);
+}
+
+#linkButton
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/link.svg);
+}
+
+#sortButton
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/sort.svg);
+}
+
+#BrowserDialog #backBtn,
+#ModInfoDialog #deactivateESP,
+#PreviewDialog #previousButton
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/previous.svg);
+}
+
+#BrowserDialog #fwdBtn,
+#InstanceManagerDialog #switchToInstance,
+#ModInfoDialog #activateESP,
+#PreviewDialog #nextButton
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/next.svg);
+}
+
+#BrowserDialog #refreshBtn,
+#ModInfoDialog #refresh
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/refresh.svg);
+}
+
+#DisableProxyPluginDialog #yesBtn,
+#InstanceManagerDialog #deleteInstance
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/remove.svg);
+}
+
+#EditExecutablesDialog #add,
+#InstanceManagerDialog #createNew
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/add.svg);
+}
+
+#EditExecutablesDialog #remove
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/list-remove.svg);
+}
+
+#EditExecutablesDialog #up
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/go-up.svg);
+}
+
+#EditExecutablesDialog #down
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/go-down.svg);
+}
+
+#ModInfoDialog #track
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/tracked.svg);
+}
+
+#SettingsDialog #bsaDateBtn
+{
+	qproperty-icon: url(./var(--icon-dir)/mo2/locked.svg);
+}

@@ -1,0 +1,6 @@
+/* Gray accent, Bearded Theme Vivid Black's active line number: a mid gray that reads on both bases. */
+:root
+{
+	--accent-name: Gray;
+	--accent: #929293; /* checkboxes, radio buttons and active filter borders */
+}

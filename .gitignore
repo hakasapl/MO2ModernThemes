@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+
+# Build output: python build.py writes the stylesheets, the release workflow packages them.
+stylesheets/
+dist/

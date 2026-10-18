@@ -1,0 +1,6 @@
+/* Yellow accent, Bearded Theme Vivid Black's terminal yellow. */
+:root
+{
+	--accent-name: Yellow;
+	--accent: #ffb638; /* checkboxes, radio buttons and active filter borders */
+}

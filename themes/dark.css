@@ -1,0 +1,41 @@
+/* Modern Theme Dark, colors from Bearded Theme Vivid Black. Each accent in accents/ makes a variant.
+   Each variable's theme key follows its value; translucent colors are blended over the shade they sit on. */
+:root
+{
+	--name: Dark;
+	--colors-from: Bearded Theme Vivid Black;
+
+	/* Background ramp, darkest to lightest. */
+	--bg-0: #060607; /* editorGroup.border: outlines: group boxes, separators, grid lines */
+	--bg-1: #0f0f11; /* activityBar.background: window, toolbars, header rows, disabled controls */
+	--bg-2: #141417; /* editor.background: lists, trees, text areas, scroll bar tracks */
+	--bg-3: #1a1a1e; /* input.background: inputs, dropdowns, tabs, pressed buttons, checkboxes */
+	--bg-4: #202025; /* editorWidget.background: menus, tooltips, open dropdowns, list item hover */
+	--bg-5: #25252a; /* button.secondaryBackground: buttons, selection, hover */
+	--bg-6: #383840; /* toolbar.activeBackground over --bg-4: button hover, selected tab and menu item, borders */
+
+	/* Text boxes, number boxes and dropdowns. Borderless in the dark base: the inputs' own background, where
+	   the light base uses input.border. */
+	--input-border: #1a1a1e;
+
+	--scrollbar: #2a2a2d; /* scrollbarSlider.background over --bg-1 */
+	--scrollbar-hover: #333336; /* scrollbarSlider.hoverBackground over --bg-1 */
+
+	--link: #28a9ff; /* textLink.foreground */
+	--progress: #5d5d5e; /* button.background over --bg-1: progress bars */
+
+	--text: #c5c5cb; /* editor.foreground */
+	--text-bright: #efefef; /* quickInputList.focusForeground: hovered and selected items */
+	--text-muted: #aaaab3; /* foreground: unselected tabs */
+	--text-disabled: #6a6a6e; /* descriptionForeground over --bg-1 */
+
+	/* List icons: conflicts, flags and plugin markers. */
+	--icon: #f2b53a; /* loose file and archive conflicts, archives, light-flagged plugins */
+	--icon-alt: #4aa3f0; /* loose files that overwrite archives */
+	--icon-positive: #74c94e; /* winning a conflict */
+	--icon-negative: #e5485f; /* losing a conflict, not endorsed */
+	--icon-mark: #efefef; /* marks and shines on colored icons: the warning's inside, the help's question mark */
+	--icon-shade: #0f0f11; /* dark marks on colored icons: the warning's exclamation mark, the badges' numbers */
+
+	--error-bg: #531b36; /* invalid filter text box */
+}

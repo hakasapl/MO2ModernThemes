@@ -1,0 +1,6 @@
+/* Indigo accent, Bearded Theme Vivid Black's between the blue and the violet, Vivid Black has no indigo. */
+:root
+{
+	--accent-name: Indigo;
+	--accent: #6883ff; /* checkboxes, radio buttons and active filter borders */
+}

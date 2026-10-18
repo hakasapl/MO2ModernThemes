@@ -1,0 +1,6 @@
+/* Orange accent, Bearded Theme Vivid Black's syntax orange. */
+:root
+{
+	--accent-name: Orange;
+	--accent: #ff7135; /* checkboxes, radio buttons and active filter borders */
+}

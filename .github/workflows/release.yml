@@ -1,0 +1,56 @@
+# Builds the stylesheets and drafts a release with two archives, each extracted into the MO2 folder:
+# the plugin (plugins/modern_themes.py) and the themes (stylesheets/).
+name: Draft release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to release, such as 1.2.0. Empty takes the plugin's own version.
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build the stylesheets
+        run: python build.py
+
+      - name: Find the version
+        id: version
+        env:
+          REQUESTED: ${{ inputs.version }}
+        run: |
+          version="${REQUESTED#v}"
+          if [ -z "$version" ]; then
+            version=$(python -c "import re; print('.'.join(re.search(r'VersionInfo\((\d+), (\d+), (\d+)\)', open('plugins/modern_themes.py', encoding='utf-8').read()).groups()))")
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Package
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          mkdir -p dist/plugin/plugins dist/themes
+          cp plugins/modern_themes.py dist/plugin/plugins/
+          cp -r stylesheets dist/themes/
+          (cd dist/plugin && zip -r "../MO2ModernThemes-Plugin-v$VERSION.zip" plugins)
+          (cd dist/themes && zip -r "../MO2ModernThemes-Themes-v$VERSION.zip" stylesheets)
+
+      - name: Draft the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          gh release create "v$VERSION" dist/*.zip \
+            --draft --title "v$VERSION" --target "$GITHUB_SHA" --generate-notes

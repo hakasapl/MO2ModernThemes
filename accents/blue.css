@@ -1,0 +1,6 @@
+/* Blue accent, Bearded Theme Vivid Black's terminal blue. */
+:root
+{
+	--accent-name: Blue;
+	--accent: #28a9ff; /* checkboxes, radio buttons and active filter borders */
+}

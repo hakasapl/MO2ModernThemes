@@ -1,0 +1,6 @@
+/* Violet accent, Bearded Theme Vivid Black's syntax violet. */
+:root
+{
+	--accent-name: Violet;
+	--accent: #a95eff; /* checkboxes, radio buttons and active filter borders */
+}
