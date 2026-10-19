@@ -25,7 +25,7 @@ With the marker, whatever the others say:
 - The status bar's API label keeps its background inside the stylesheet's rounded corners and margins;
   MO2 turns on autoFillBackground for it on every update.
 - Every list scrolls smoothly, a wheel step gliding there instead of jumping a few rows, at a speed the
-  settings set; the mod and plugin lists' columns always fit the list's width, dragging the edge between
+  settings set, and scrolls quickly as a mod or a selection is dragged to its top or bottom; the mod and plugin lists' columns always fit the list's width, dragging the edge between
   two columns trades width between just those two; the mod list's top separator stays pinned while its
   mods fill the list; the executables row sits level with the mod list's; the Nexus settings lose an empty
   gap and the Diagnostics settings their wider spacing. Settings turn the smooth scrolling, the pinned separator and the Nexus gap off.
@@ -83,8 +83,10 @@ from PyQt6.QtCore import (
 from PyQt6.QtGui import (
     QColor,
     QCursor,
+    QDragMoveEvent,
     QIcon,
     QImage,
+    QMouseEvent,
     QPainter,
     QPainterPath,
     QPixmap,
@@ -184,6 +186,21 @@ SCROLL_SPEED_SETTING = ("scroll_speed", "Rows the lists scroll for each mouse wh
 # In milliseconds, the time a glide takes to close all but 1/e of the distance left, so a wheel step
 # settles in about 4.6 times that.
 SMOOTH_SCROLL_TIME_CONSTANT = 45
+# Edge scrolling, while a mod or a selection is dragged to a list's top or bottom, in rows a second: as the
+# cursor comes into the edge zone, at the list's very edge, and as far past it as the zone is deep, when
+# dragging a selection out of the list.
+EDGE_SCROLL_SPEEDS = (15, 40, 65)
+# In milliseconds, the time edge scrolling takes to get all but 1/e of the way to its speed.
+EDGE_SCROLL_RAMP = 60
+EDGE_SCROLL_EVENTS = (
+    QEvent.Type.DragEnter,
+    QEvent.Type.DragMove,
+    QEvent.Type.DragLeave,
+    QEvent.Type.Drop,
+    QEvent.Type.MouseButtonPress,
+    QEvent.Type.MouseMove,
+    QEvent.Type.MouseButtonRelease,
+)
 # In milliseconds, how long a glide waits for the list to paint its last step before it makes the next.
 SMOOTH_SCROLL_PAINT_WAIT = 50
 # Once easing moves less than a step a frame, the glide moves one step every few frames, the gap growing
@@ -947,12 +964,18 @@ def wholePixelStep(ratio: float) -> int:
 
 
 class SmoothScroller:
-    """Glides a list to where a wheel step takes it instead of jumping there.
+    """Glides a list to where a wheel step takes it instead of jumping there, and scrolls it while a mod or
+    a selection is dragged to its top or bottom.
 
     The list scrolls by pixel so it can stop between rows, and moves once per frame the screen shows. Each
     frame closes a fixed share of the remaining distance per millisecond, worked out from the time that
     really passed, so a step that comes while the list glides only moves where it is heading. Anything
     else that moves the scroll bar, a drag, the keyboard or MO2 showing an item, stops the glide.
+
+    Qt's own edge scrolling counts in the scroll bar's units, pixels once the list scrolls by pixel, and
+    starts at one a tick: it crept. This one starts as the cursor comes into the edge zone, at
+    EDGE_SCROLL_SPEEDS rows a second, faster the nearer the edge, and gets up to speed within about
+    EDGE_SCROLL_RAMP milliseconds.
     """
 
     def __init__(self, view: QAbstractItemView, plugin: "ModernThemes"):
@@ -974,7 +997,20 @@ class SmoothScroller:
         self._stepTimer = QElapsedTimer()
         self.clock = QElapsedTimer()
         self.autoFill = view.viewport().autoFillBackground()
+        self.autoScroll = view.hasAutoScroll()
+        # Edge scrolling: "drag" while a drag is over the list, "select" while the button is down on it.
+        self._edgeState = None
+        self._edgePos = QPoint()
+        self._edgeSpeed = 0.0
+        self._edgePosition = 0.0
+        self._edgeOrigin = 0
+        self._edgeValue = 0
+        self._edgeMoved = False
+        self._edgeClock = QElapsedTimer()
+        self._isEdgeScrolling = False
+        self._drag = None
         view.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
+        view.setAutoScroll(False)
         self.bar.valueChanged.connect(self._onValueChanged)
         self.makeOpaque()
 
@@ -1075,14 +1111,126 @@ class SmoothScroller:
         self.isGliding = False
         self._plugin.frameClock.remove(self._onFrame)
 
+    def viewportEvent(self, event):
+        """Follows drags and button presses over the list, for edge scrolling."""
+        eventType = event.type()
+        if eventType in (QEvent.Type.DragEnter, QEvent.Type.DragMove):
+            self._drag = (event.mimeData(), event.possibleActions(), event.buttons(), event.modifiers())
+            self._followEdge("drag", event.position().toPoint())
+            self._edgeMoved = True
+        elif eventType in (QEvent.Type.DragLeave, QEvent.Type.Drop):
+            self._edgeState = None
+            self._drag = None
+        elif eventType == QEvent.Type.MouseButtonPress and event.button() == Qt.MouseButton.LeftButton:
+            self._followEdge("select", event.position().toPoint())
+        elif eventType == QEvent.Type.MouseMove and self._edgeState == "select":
+            self._edgePos = event.position().toPoint()
+            self._edgeMoved = True
+        elif eventType == QEvent.Type.MouseButtonRelease and self._edgeState == "select":
+            self._edgeState = None
+
+    def _followEdge(self, state: str, position: QPoint):
+        if state != self._edgeState:
+            # As in Qt, a press scrolls only once the mouse moves; a click near the edge stays put.
+            self._edgeMoved = False
+        self._edgeState = state
+        self._edgePos = position
+        if not self._isEdgeScrolling:
+            self._isEdgeScrolling = True
+            self._restartEdge()
+            self._edgeClock.start()
+            self._plugin.frameClock.add(self._onEdgeFrame)
+
+    def _restartEdge(self):
+        # From rest, from where the list is now.
+        self._edgeSpeed = 0.0
+        self._edgePosition = float(self.bar.value())
+        self._edgeOrigin = self._edgeValue = self.bar.value()
+        self.step = wholePixelStep(self.view.devicePixelRatioF())
+
+    def _stopEdge(self):
+        self._isEdgeScrolling = False
+        self._edgeSpeed = 0.0
+        self._plugin.frameClock.remove(self._onEdgeFrame)
+
+    def _onEdgeFrame(self):
+        if self._edgeState is None:
+            self._stopEdge()
+            return
+        if self._awaitingPaint and self._stepTimer.elapsed() < SMOOTH_SCROLL_PAINT_WAIT:
+            return
+        elapsed = self._edgeClock.nsecsElapsed() / 1e6
+        self._edgeClock.restart()
+        bar = self.bar
+        height = self.view.viewport().height()
+        margin = max(self.view.autoScrollMargin(), 1)
+        y = self._edgePos.y()
+        if y < margin:
+            direction, depth = -1, (margin - y) / margin
+        elif y >= height - margin:
+            direction, depth = 1, (y - (height - margin)) / margin
+        else:
+            direction, depth = 0, 0.0
+        atEnd = bar.value() <= bar.minimum() if direction < 0 else bar.value() >= bar.maximum()
+        if direction == 0 or atEnd or not self._edgeMoved or bar.value() != self._edgeValue:
+            # Out of the edge zone, nowhere left to go, not moved yet, or scrolled by something else: the
+            # next scroll starts from rest, from here.
+            self._restartEdge()
+            if direction == 0 or atEnd or not self._edgeMoved:
+                return
+        if self.isGliding:
+            self._stop()
+        entering, edge, beyond = EDGE_SCROLL_SPEEDS
+        rows = entering + (edge - entering) * depth if depth <= 1 else edge + (beyond - edge) * min(depth - 1, 1)
+        target = direction * rows * self._rowHeight() / 1000
+        if self._edgeSpeed * direction < 0:
+            self._edgeSpeed = 0.0
+        self._edgeSpeed += (target - self._edgeSpeed) * (1 - math.exp(-elapsed / EDGE_SCROLL_RAMP))
+        # A frame after a stall moves no further than a tree view still scrolls by moving its pixels.
+        rowsInView = max(height // max(self._rowHeight(), 1) - 1, 1)
+        move = max(-rowsInView, min(rowsInView, self._edgeSpeed * elapsed))
+        self._edgePosition = max(float(bar.minimum()), min(float(bar.maximum()), self._edgePosition + move))
+        step = self.step
+        value = self._edgeOrigin + step * round((self._edgePosition - self._edgeOrigin) / step)
+        if value != bar.value():
+            self._isMoving = True
+            bar.setValue(value)
+            self._isMoving = False
+            self._edgeValue = bar.value()
+            self._awaitingPaint = self.view.viewport().isVisible()
+            self._stepTimer.start()
+            self._refreshEdgeTarget()
+
+    def _refreshEdgeTarget(self):
+        """Lets the list follow the still cursor over the rows that scrolled under it: the drop indicator
+        while dragging, the selection while selecting, as Qt's own edge scrolling does."""
+        viewport = self.view.viewport()
+        if self._edgeState == "drag" and self._drag is not None:
+            data, actions, buttons, modifiers = self._drag
+            QApplication.sendEvent(viewport, QDragMoveEvent(self._edgePos, actions, data, buttons, modifiers))
+        elif self._edgeState == "select":
+            position = QPointF(self._edgePos)
+            event = QMouseEvent(
+                QEvent.Type.MouseMove,
+                position,
+                QPointF(viewport.mapToGlobal(self._edgePos)),
+                Qt.MouseButton.NoButton,
+                Qt.MouseButton.LeftButton,
+                QApplication.keyboardModifiers(),
+            )
+            QApplication.sendEvent(viewport, event)
+
     def _onValueChanged(self, value: int):
         if not self._isMoving and self.isGliding:
             self._stop()
 
     def remove(self):
         self._stop()
+        self._edgeState = None
+        self._stopEdge()
         self.bar.valueChanged.disconnect(self._onValueChanged)
         self.view.setVerticalScrollMode(self.mode)
+        self.view.setAutoScroll(self.autoScroll)
         self.view.viewport().setAutoFillBackground(self.autoFill)
 
 
@@ -1494,6 +1642,10 @@ class ThemeEventFilter(QObject):
             scroller = plugin.smoothScrollers.get(id(area if area is not None else watched.parentWidget()))
             if scroller is not None and scroller.wheel(event):
                 return True
+        if eventType in EDGE_SCROLL_EVENTS and plugin.smoothScrollers:
+            scroller = plugin.smoothScrollers.get(id(watched.parentWidget()))
+            if scroller is not None and watched is scroller.view.viewport():
+                scroller.viewportEvent(event)
         if eventType == QEvent.Type.MouseButtonPress and isinstance(watched, (QPushButton, QToolButton)):
             # A button opens its menu on a press, the menu's show event knows the button by this.
             plugin.menuButton = watched
@@ -1619,7 +1771,7 @@ class ModernThemes(mobase.IPlugin):
         )
 
     def version(self) -> mobase.VersionInfo:
-        return mobase.VersionInfo(1, 28, 1)
+        return mobase.VersionInfo(1, 29, 0)
 
     def settings(self) -> list:
         toggles = [*HIDDEN_WIDGETS.values(), SCROLL_BAR_SETTING, SMOOTH_SCROLL_SETTING, STICKY_SEPARATOR_SETTING]
