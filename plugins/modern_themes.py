@@ -189,7 +189,7 @@ SMOOTH_SCROLL_TIME_CONSTANT = 45
 # Edge scrolling, while a mod or a selection is dragged to a list's top or bottom, in rows a second: as the
 # cursor comes into the edge zone, at the list's very edge, and as far past it as the zone is deep, when
 # dragging a selection out of the list.
-EDGE_SCROLL_SPEEDS = (15, 40, 65)
+EDGE_SCROLL_SPEEDS = (22.5, 60, 97.5)
 # In milliseconds, the time edge scrolling takes to get all but 1/e of the way to its speed.
 EDGE_SCROLL_RAMP = 60
 EDGE_SCROLL_EVENTS = (
@@ -1771,7 +1771,7 @@ class ModernThemes(mobase.IPlugin):
         )
 
     def version(self) -> mobase.VersionInfo:
-        return mobase.VersionInfo(1, 29, 0)
+        return mobase.VersionInfo(1, 29, 1)
 
     def settings(self) -> list:
         toggles = [*HIDDEN_WIDGETS.values(), SCROLL_BAR_SETTING, SMOOTH_SCROLL_SETTING, STICKY_SEPARATOR_SETTING]
