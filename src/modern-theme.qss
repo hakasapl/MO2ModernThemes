@@ -910,6 +910,28 @@ QCheckBox::indicator:checked:disabled
 	image: url(./var(--icon-dir)/check-disabled.svg);
 }
 
+/* Partly checked, such as a box standing for a mix of checked and unchecked items: a square instead of
+   the check mark, otherwise like a checked box. */
+QTreeView::indicator:indeterminate,
+QListView::indicator:indeterminate,
+QTableView::indicator:indeterminate,
+QCheckBox::indicator:indeterminate
+{
+	background: var(--accent);
+	border-color: var(--accent);
+	image: url(./var(--icon-dir)/indeterminate.svg);
+}
+
+QTreeView::indicator:indeterminate:disabled,
+QListView::indicator:indeterminate:disabled,
+QTableView::indicator:indeterminate:disabled,
+QCheckBox::indicator:indeterminate:disabled
+{
+	background: var(--bg-6);
+	border-color: var(--bg-6);
+	image: url(./var(--icon-dir)/indeterminate-disabled.svg);
+}
+
 
 /* Radio Buttons -------------------------------------------------------------- */
 
